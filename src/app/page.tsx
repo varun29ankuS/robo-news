@@ -1,4 +1,4 @@
-import { getPosts, getPostCount } from "@/lib/db";
+import { getPosts, getPostCount, Post } from "@/lib/db";
 import { domains } from "@/lib/sources";
 import Header from "@/components/Header";
 import HomeContent from "@/components/HomeContent";
@@ -24,13 +24,13 @@ async function HomePageWrapper({
 
   const validDomain = domains.some((d) => d.id === domain) ? domain : "all";
 
-  let posts;
+  let posts: Post[] = [];
   let totalCount = 0;
   try {
     posts = getPosts(validDomain);
     totalCount = getPostCount();
   } catch {
-    posts = [];
+    // Database error - use empty posts
   }
 
   return (
