@@ -77,17 +77,17 @@ function getSourceDisplay(source: string): string {
 interface PostCardProps {
   post: Post;
   index: number;
-  isSelected: boolean;
-  onSelect: () => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
 }
 
-export default function PostCard({ post, index, isSelected, onSelect }: PostCardProps) {
+export default function PostCard({ post, index, isSelected = false, onSelect }: PostCardProps) {
   const DomainIcon = domainIconMap[post.domain] || AllIcon;
 
   return (
     <article
       className={`group card p-4 cursor-pointer relative overflow-hidden ${isSelected ? "glow-border bg-[rgba(var(--accent-rgb),0.05)]" : ""}`}
-      onClick={onSelect}
+      onClick={onSelect ?? undefined}
     >
       {/* Accent line on left */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isSelected ? "bg-[var(--accent)]" : "bg-transparent group-hover:bg-[var(--accent)] group-hover:opacity-50"}`} />
