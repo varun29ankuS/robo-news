@@ -19,6 +19,7 @@
     "terminal": "npx tsx src/cli/index.ts"
   },
   "dependencies": {
+    "@vercel/postgres": "^0.10.0",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
     "better-sqlite3": "^12.5.0",

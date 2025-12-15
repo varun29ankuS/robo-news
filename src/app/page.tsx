@@ -27,8 +27,8 @@ async function HomePageWrapper({
   let posts: Post[] = [];
   let totalCount = 0;
   try {
-    posts = getPosts(validDomain);
-    totalCount = getPostCount();
+    posts = await getPosts(validDomain);
+    totalCount = await getPostCount();
   } catch {
     // Database error - use empty posts
   }

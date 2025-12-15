@@ -32,7 +32,7 @@ async function fetchFeed(feed: FeedSource): Promise<FetchResult> {
 
       const description = item.contentSnippet?.trim().slice(0, 500) || null;
 
-      const inserted = insertPost({
+      const inserted = await insertPost({
         title: item.title.trim(),
         url: item.link,
         source: feed.source,

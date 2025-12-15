@@ -1,6 +1,4 @@
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
+import { sql } from "@vercel/postgres";
 
 export interface Post {
   id: number;
@@ -14,116 +12,86 @@ export interface Post {
   points: number;
 }
 
-let db: Database.Database | null = null;
+let initialized = false;
 
-function getDb(): Database.Database | null {
-  if (db) return db;
+async function initDb() {
+  if (initialized) return;
 
   try {
-    const dbDir = path.join(process.cwd(), "db");
-    const dbPath = path.join(dbDir, "robo.sqlite");
-
-    // Check if directory exists
-    if (!fs.existsSync(dbDir)) {
-      console.warn("Database directory does not exist, running in read-only mode");
-      return null;
-    }
-
-    db = new Database(dbPath);
-
-    db.exec(`
+    await sql`
       CREATE TABLE IF NOT EXISTS posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         url TEXT UNIQUE NOT NULL,
         source TEXT,
         domain TEXT,
         description TEXT,
-        published_at TEXT,
-        fetched_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        published_at TIMESTAMP,
+        fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         points INTEGER DEFAULT 1
       )
-    `);
+    `;
 
-    try {
-      db.exec(`ALTER TABLE posts ADD COLUMN description TEXT`);
-    } catch {
-      // Column already exists
-    }
+    await sql`CREATE INDEX IF NOT EXISTS idx_domain ON posts(domain)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_published ON posts(published_at DESC)`;
 
-    db.exec(`CREATE INDEX IF NOT EXISTS idx_domain ON posts(domain)`);
-    db.exec(`CREATE INDEX IF NOT EXISTS idx_published ON posts(published_at DESC)`);
-
-    return db;
+    initialized = true;
   } catch (err) {
     console.warn("Failed to initialize database:", err);
-    return null;
   }
 }
 
-export function insertPost(post: Omit<Post, "id" | "fetched_at" | "points">): boolean {
-  const database = getDb();
-  if (!database) return false;
-
+export async function insertPost(post: Omit<Post, "id" | "fetched_at" | "points">): Promise<boolean> {
   try {
-    const stmt = database.prepare(
-      `INSERT OR IGNORE INTO posts (title, url, source, domain, description, published_at) VALUES (?, ?, ?, ?, ?, ?)`
-    );
-    stmt.run(post.title, post.url, post.source, post.domain, post.description, post.published_at);
+    await initDb();
+    await sql`
+      INSERT INTO posts (title, url, source, domain, description, published_at)
+      VALUES (${post.title}, ${post.url}, ${post.source}, ${post.domain}, ${post.description}, ${post.published_at})
+      ON CONFLICT (url) DO NOTHING
+    `;
     return true;
   } catch {
     return false;
   }
 }
 
-export function getPosts(domain?: string, limit = 200): Post[] {
-  const database = getDb();
-  if (!database) return [];
-
+export async function getPosts(domain?: string, limit = 200): Promise<Post[]> {
   try {
+    await initDb();
     if (domain && domain !== "all") {
-      const stmt = database.prepare(
-        `SELECT * FROM posts WHERE domain = ? ORDER BY published_at DESC LIMIT ?`
-      );
-      return stmt.all(domain, limit) as Post[];
+      const { rows } = await sql`
+        SELECT * FROM posts WHERE domain = ${domain} ORDER BY published_at DESC LIMIT ${limit}
+      `;
+      return rows as Post[];
     }
-    const stmt = database.prepare(
-      `SELECT * FROM posts ORDER BY published_at DESC LIMIT ?`
-    );
-    return stmt.all(limit) as Post[];
+    const { rows } = await sql`
+      SELECT * FROM posts ORDER BY published_at DESC LIMIT ${limit}
+    `;
+    return rows as Post[];
   } catch {
     return [];
   }
 }
 
-export function upvotePost(id: number): void {
-  const database = getDb();
-  if (!database) return;
-
+export async function upvotePost(id: number): Promise<void> {
   try {
-    const stmt = database.prepare(`UPDATE posts SET points = points + 1 WHERE id = ?`);
-    stmt.run(id);
+    await initDb();
+    await sql`UPDATE posts SET points = points + 1 WHERE id = ${id}`;
   } catch {
     // Ignore errors
   }
 }
 
-export function getPostCount(domain?: string): number {
-  const database = getDb();
-  if (!database) return 0;
-
+export async function getPostCount(domain?: string): Promise<number> {
   try {
+    await initDb();
     if (domain && domain !== "all") {
-      const stmt = database.prepare(`SELECT COUNT(*) as count FROM posts WHERE domain = ?`);
-      const result = stmt.get(domain) as { count: number };
-      return result.count;
+      const { rows } = await sql`SELECT COUNT(*) as count FROM posts WHERE domain = ${domain}`;
+      return Number(rows[0]?.count || 0);
     }
-    const stmt = database.prepare(`SELECT COUNT(*) as count FROM posts`);
-    const result = stmt.get() as { count: number };
-    return result.count;
+    const { rows } = await sql`SELECT COUNT(*) as count FROM posts`;
+    return Number(rows[0]?.count || 0);
   } catch {
     return 0;
   }
 }
-
-export { db };

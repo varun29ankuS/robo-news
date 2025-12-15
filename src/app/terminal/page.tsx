@@ -4,10 +4,10 @@ import WebTerminal from "@/components/WebTerminal";
 
 export const dynamic = "force-dynamic";
 
-export default function TerminalPage() {
+export default async function TerminalPage() {
   let posts: Post[] = [];
   try {
-    posts = getPosts(undefined, 100);
+    posts = await getPosts(undefined, 100);
   } catch {
     // Database error - use empty posts
   }
