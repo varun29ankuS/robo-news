@@ -5,11 +5,15 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
-  // Simple auth via query param (you can make this more secure)
   const { searchParams } = new URL(request.url);
   const key = searchParams.get("key");
 
-  if (key !== process.env.FETCH_SECRET && process.env.FETCH_SECRET) {
+  // Allow if: Vercel cron, valid key, or no secret configured
+  const isVercelCron = request.headers.get("Authorization") === `Bearer ${process.env.CRON_SECRET}`;
+  const hasValidKey = key === process.env.FETCH_SECRET;
+  const noSecretConfigured = !process.env.FETCH_SECRET && !process.env.CRON_SECRET;
+
+  if (!isVercelCron && !hasValidKey && !noSecretConfigured) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
