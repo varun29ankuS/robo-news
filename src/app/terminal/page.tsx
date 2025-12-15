@@ -1,15 +1,15 @@
-import { getPosts } from "@/lib/db";
+import { getPosts, Post } from "@/lib/db";
 import Header from "@/components/Header";
 import WebTerminal from "@/components/WebTerminal";
 
 export const dynamic = "force-dynamic";
 
 export default function TerminalPage() {
-  let posts;
+  let posts: Post[] = [];
   try {
     posts = getPosts(undefined, 100);
   } catch {
-    posts = [];
+    // Database error - use empty posts
   }
 
   return (
