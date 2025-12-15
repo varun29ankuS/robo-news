@@ -1,0 +1,47 @@
+{
+  "name": "robo-news",
+  "version": "0.1.0",
+  "description": "Robotics & AI News Aggregator - Terminal and Web UI",
+  "bin": {
+    "robo-news": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist/cli",
+    "dist/lib"
+  ],
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "fetch": "npx tsx src/scripts/fetch.ts",
+    "tui": "npx tsx src/cli/index.ts",
+    "terminal": "npx tsx src/cli/index.ts"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "better-sqlite3": "^12.5.0",
+    "chalk": "^4.1.2",
+    "ink": "^6.5.1",
+    "ink-select-input": "^6.2.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
+    "next": "^15.0.0",
+    "open": "^11.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "rss-parser": "^3.13.0",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.0.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.0"
+  }
+}
