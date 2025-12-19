@@ -88,7 +88,11 @@ class RoboNewsTUI {
 
   constructor() {
     this.setupInput();
-    this.loadPosts();
+    this.init();
+  }
+
+  private async init(): Promise<void> {
+    await this.loadPosts();
     this.render();
   }
 
@@ -100,7 +104,7 @@ class RoboNewsTUI {
 
     process.stdout.write(c.hideCursor);
 
-    process.stdin.on("keypress", (str, key) => {
+    process.stdin.on("keypress", async (str, key) => {
       if (key.ctrl && key.name === "c") {
         this.exit();
         return;
@@ -113,30 +117,34 @@ class RoboNewsTUI {
         case "up":
         case "k":
           this.moveSelection(-1);
+          this.render();
           break;
         case "down":
         case "j":
           this.moveSelection(1);
+          this.render();
           break;
         case "left":
         case "h":
-          this.changeDomain(-1);
+          await this.changeDomain(-1);
           break;
         case "right":
         case "l":
-          this.changeDomain(1);
+          await this.changeDomain(1);
           break;
         case "return":
-          this.openArticle();
+          await this.openArticle();
           break;
         case "r":
-          this.refresh();
+          await this.refresh();
           break;
         case "pageup":
           this.moveSelection(-this.pageSize);
+          this.render();
           break;
         case "pagedown":
           this.moveSelection(this.pageSize);
+          this.render();
           break;
         default:
           // Number keys for domain selection
@@ -144,23 +152,23 @@ class RoboNewsTUI {
             const idx = parseInt(str) - 1;
             if (idx < DOMAINS.length) {
               this.domain = DOMAINS[idx];
-              this.loadPosts();
+              await this.loadPosts();
+              this.render();
             }
           }
       }
-      this.render();
     });
   }
 
-  private loadPosts(): void {
+  private async loadPosts(): Promise<void> {
     try {
       const domainFilter = this.domain === "all" ? undefined : this.domain;
-      this.posts = getPosts(domainFilter, 100);
-      this.count = getPostCount(domainFilter);
+      this.posts = await getPosts(domainFilter, 100);
+      this.count = await getPostCount(domainFilter);
       this.selectedIndex = 0;
       this.pageOffset = 0;
     } catch (err) {
-      this.message = "Error loading posts. Run 'npm run fetch' first.";
+      this.message = "Error loading posts. Check POSTGRES_URL env var.";
     }
   }
 
@@ -175,13 +183,14 @@ class RoboNewsTUI {
     }
   }
 
-  private changeDomain(delta: number): void {
+  private async changeDomain(delta: number): Promise<void> {
     const currentIdx = DOMAINS.indexOf(this.domain);
     let newIdx = currentIdx + delta;
     if (newIdx < 0) newIdx = DOMAINS.length - 1;
     if (newIdx >= DOMAINS.length) newIdx = 0;
     this.domain = DOMAINS[newIdx];
-    this.loadPosts();
+    await this.loadPosts();
+    this.render();
   }
 
   private async openArticle(): Promise<void> {
@@ -205,9 +214,10 @@ class RoboNewsTUI {
     }, 2000);
   }
 
-  private refresh(): void {
-    this.loadPosts();
+  private async refresh(): Promise<void> {
+    await this.loadPosts();
     this.message = "Refreshed!";
+    this.render();
     setTimeout(() => {
       this.message = "";
       this.render();
