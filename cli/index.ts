@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as readline from "readline";
-import { getPosts, getPostCount, type Post } from "../lib/db.js";
+import { getPosts, getPostCount, type Post } from "../src/lib/db.js";
 
 const DOMAINS = ["all", "ai", "drones", "arms", "humanoids", "mobile", "industrial", "diy"] as const;
 type Domain = (typeof DOMAINS)[number];

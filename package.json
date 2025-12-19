@@ -15,8 +15,8 @@
     "start": "next start",
     "lint": "next lint",
     "fetch": "npx tsx src/scripts/fetch.ts",
-    "tui": "npx tsx src/cli/index.ts",
-    "terminal": "npx tsx src/cli/index.ts"
+    "tui": "npx tsx cli/index.ts",
+    "terminal": "npx tsx cli/index.ts"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
