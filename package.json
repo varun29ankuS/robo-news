@@ -19,6 +19,7 @@
     "terminal": "npx tsx cli/index.ts"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "@vercel/postgres": "^0.10.0",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
@@ -35,12 +36,12 @@
     "tsx": "^4.21.0"
   },
   "devDependencies": {
-    "better-sqlite3": "^12.5.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.0.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
+    "better-sqlite3": "^12.5.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.7.0"
